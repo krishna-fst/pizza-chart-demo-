@@ -10,6 +10,6 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 The page will reload when you make changes.\
 You may also see any lint errors in the console.
 
-### `Coda sandbox link`
+### `Code sandbox link`
 
 https://codesandbox.io/s/heuristic-mahavira-9y2zg3
