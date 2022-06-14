@@ -1,22 +1,27 @@
 import { Chart } from '@antv/g2';
 import './App.css';
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import ProductService from './services/productService';
 
 function App() {
 
+  const productService = new ProductService();
   const ptoductTitles = ['Image', 'Brand', 'Title', 'Price', 'Rating', 'Category'];
   const limit = 10;
   const [products, setProducts] = useState([]);
+  const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [skip, setSkip] = useState(0);
   const [productTotal, setProductTotal] = useState(0);
   const [chart, setChart] = useState();
 
-
   useEffect(() => {
     getAllProducts();
-  }, [page]);
+  }, []);
+
+  useEffect(() => {
+    getProduct();
+  }, [page, items]);
 
   useEffect(() => {
     if (chart) {
@@ -25,12 +30,27 @@ function App() {
   }, [chart]);
 
   /**
+ * Fetch all products
+ */
+  const getAllProducts = async () => {
+    const response = await productService.getAllProducts();
+    setItems(response.products);
+    setProductTotal(response.total);
+    setChart(new Chart({
+      container: 'container',
+      autoFit: true,
+      height: 600,
+      padding: [40, 100, 80, 80]
+    }));
+  }
+
+  /**
    * Prepare chart
    */
   const createChart = () => {
-    chart.data(products);
+    chart.data(items);
     chart.scale('price', {
-      values: [0, 500, 1000, 1500]
+      values: [0, 500, 1000, 1500, 2000]
     });
     chart.coordinate('polar');
     chart.legend(false);
@@ -60,16 +80,9 @@ function App() {
   /**
    * Fetch all products
    */
-  const getAllProducts = async () => {
-    const response = await axios.get(`https://dummyjson.com/products?skip=${skip}&limit=${limit}`);
-    setProducts(response.data.products);
-    setProductTotal(response.data.total);
-    setChart(new Chart({
-      container: 'container',
-      autoFit: true,
-      height: 350,
-      padding: [40, 100, 80, 80]
-    }));
+  const getProduct = async () => {
+    const products = items.slice(skip, skip + 10);
+    setProducts(products);
   }
 
   /**
@@ -81,15 +94,14 @@ function App() {
     }
     setPage(pageNumber);
     setSkip(limit * pageNumber - limit);
-    chart.destroy();
   }
 
 
   return (
     <div className="App">
-      <p>Data visualization App</p>
+      <h2 className='text-primary'>Data visualization App</h2>
       <div id="container" />
-      <table className="table">
+      <table className="table table-striped table-hover table-bordered ">
         <thead>
           <tr>
             {ptoductTitles.map((title, uniqueKey) => (
@@ -105,46 +117,25 @@ function App() {
           {products.map((product, tableKey) => {
             return (
               <tr key={tableKey}>
-                <td className="">
-                  <div >
+                <td>
+                  <div>
                     <img src={product.thumbnail} style={{ width: '50px', height: '50px' }} alt="" />
                   </div>
                 </td>
-                <td >
-                  <div >
-                    <span >
-                      {product.brand}
-                    </span>
-                  </div>
+                <td>
+                  {product.brand}
                 </td>
                 <td >
-                  <div >
-                    <span>
-                      {product.title}
-                    </span>
-                  </div>
+                  {product.title}
                 </td>
                 <td>
-                  <div>
-                    <span>
-                      {product.price}
-                    </span>
-                  </div>
-                </td>
-
-                <td>
-                  <div>
-                    <span>
-                      {product.rating}
-                    </span>
-                  </div>
+                  {product.price}
                 </td>
                 <td>
-                  <div>
-                    <span>
-                      {product.category}
-                    </span>
-                  </div>
+                  {product.rating}
+                </td>
+                <td>
+                  {product.category}
                 </td>
               </tr>
             )
@@ -154,17 +145,17 @@ function App() {
 
       <nav aria-label="Page navigation example">
         <ul className="pagination justify-content-end">
-          <li className="page-item" onClick={() => changeInPage(page - 1)}>
+          <li className="page-item px-1" onClick={() => changeInPage(page - 1)}>
             <a className="page-link" href="/#" aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
             </a>
           </li>
           {[...Array(productTotal / limit)].map((rating, ratingKey) =>
             <span key={ratingKey}>
-              <li className="page-item"><a className="page-link" href="/#" onClick={() => changeInPage(ratingKey + 1)}>{ratingKey + 1}</a></li>
+              <li className={page === ratingKey + 1 ? 'page-item px-1 active' : 'page-item px-1'} ><a className="page-link" href="/#" onClick={() => changeInPage(ratingKey + 1)}>{ratingKey + 1}</a></li>
             </span>
           )}
-          <li className="page-item" onClick={() => changeInPage(page + 1)}>
+          <li className="page-item px-1" onClick={() => changeInPage(page + 1)}>
             <a className="page-link" href="/#" aria-label="Next">
               <span aria-hidden="true">&raquo;</span>
             </a>
