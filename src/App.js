@@ -68,7 +68,7 @@ function App() {
       .point()
       .adjust('jitter')
       .position('brand*price')
-      .color('brand')
+      .color('title')
       .shape('circle')
       .style({
         fillOpacity: 0.90,
